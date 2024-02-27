@@ -10,8 +10,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { User } from 'src/user/entities/user.entity';
-import { OtpJob } from 'src/utils/enums/optJob.enum';
+import { OtpJob } from 'src/utils/enums/otpJob.enum';
 import { v4 as uuid } from 'uuid';
 
 @ObjectType()

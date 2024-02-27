@@ -5,7 +5,7 @@ export const hashPassword = async (password) => {
   return hashPassword;
 };
 
-export const comperePassword = (loginPassword, userPaswword) => {
+export const comparePassword = (loginPassword, userPaswword) => {
   const comparePassword = compare(loginPassword, userPaswword);
   return comparePassword;
 };

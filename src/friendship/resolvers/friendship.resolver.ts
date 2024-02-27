@@ -27,7 +27,7 @@ export class FriendshipResolver {
   @Mutation(() => FriendShip)
   async sendFriendrequest(
     @Args('receiverId') receiverId: string,
-    @CurrentUser() user: String,
+    @CurrentUser() user: User,
   ) {
     const request = await this.friendshipService.sendRequest(receiverId, user);
     await pubsub.publish('SEND_REQUEST', { sendRequest: request });
@@ -43,9 +43,9 @@ export class FriendshipResolver {
   @Mutation(() => FriendShip)
   acceptFriendshipRequest(
     @Args('userId') userId: string,
-    @CurrentUser() user: String,
+    @CurrentUser() currentUser: User,
   ) {
-    return this.friendshipService.acceptRequest(userId, user);
+    return this.friendshipService.acceptRequest(userId, currentUser);
   }
 
   @UseGuards(AuthGuard)
@@ -69,6 +69,7 @@ export class FriendshipResolver {
     return this.friendshipService.findAllFriends(user);
   }
 
+  ////////////////////////// Data Loader //////////////////////////////
   @ResolveField()
   userSender(@Parent() friendShip, @Context('loaders') loaders: IDataLoader) {
     return loaders.userLoader.load(friendShip.senderId);

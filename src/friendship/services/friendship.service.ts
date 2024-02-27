@@ -12,12 +12,12 @@ export class FriendshipService {
     @Inject('USER_REPOSITORY') private userRepository: typeof User,
   ) {}
 
-  async sendRequest(receiverId: string, user: String) {
+  async sendRequest(receiverId: string, user: User) {
     const existRequest = await this.friendshipRepository.findOne({
       where: {
         [Op.or]: [
-          { senderId: user, receiverId },
-          { senderId: receiverId, receiverId: user },
+          { senderId: user.id, receiverId },
+          { senderId: receiverId, receiverId: user.id },
         ],
       },
     });
@@ -26,17 +26,18 @@ export class FriendshipService {
     }
 
     const request = await this.friendshipRepository.create({
-      senderId: user,
+      senderId: user.id,
       receiverId,
     });
+
     return request;
   }
 
-  async acceptRequest(userId: string, user: String) {
+  async acceptRequest(userId: string, currentUser: User) {
     const request = await this.friendshipRepository.update(
       { accepted: FrienshipRequestEnum.ACCEPT },
       {
-        where: { senderId: userId, receiverId: user },
+        where: { senderId: userId, receiverId: currentUser.id },
         returning: true,
       },
     );

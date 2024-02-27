@@ -1,52 +1,47 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UserService } from '../services/user.service';
 import { User } from '../entities/user.entity';
-import { UpdateUserInput } from '../dto/update-user.input';
-import { UUID } from 'crypto';
+import { GetUser, GetUsersInput } from '../dto/get-users.filter';
+import { PaginatorArgs } from '../../_common/pagination/pagenator.input';
+import { UserPagination } from '../user.response';
+import { CurrentUser } from 'src/_common/decorators/currentUser';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/_common/guards/authGuard';
-import { CreateUserInput } from '../dto/create-user.input';
-import { CurrentUser } from 'src/_common/decorators/currentUser';
-import { AddSocialAcountInput } from '../dto/addSocialAcount.input';
+import { UpdateUserInput } from '../dto/update-user.input';
+import { changePasswordInput } from '../dto/changePassword.input';
 
-@UseGuards(AuthGuard)
 @Resolver(() => User)
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
-    return this.userService.create(createUserInput);
-  }
-
-  @Query(() => [User])
-  findAllUsers() {
-    return this.userService.findAll();
+  @Query(() => UserPagination)
+  findAllUsers(
+    @Args() usersBoardInput: GetUsersInput,
+    @Args() paginate: PaginatorArgs = {},
+  ) {
+    return this.userService.findAll(usersBoardInput.filter, paginate.paginate);
   }
 
   @Query(() => User)
-  findOneUser(@Args('id') id: UUID) {
-    return this.userService.findOne(id);
+  findOneUser(@Args('userId') userId: GetUser) {
+    return this.userService.findOne(userId);
   }
 
+  @UseGuards(AuthGuard)
   @Mutation(() => User)
-  updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-    return this.userService.update(updateUserInput.id, updateUserInput);
+  updateProfile(
+    @Args('input') input: UpdateUserInput,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.updateProfile(input, user);
   }
 
+  @UseGuards(AuthGuard)
   @Mutation(() => String)
-  removeUser(@Args('id') id: UUID) {
-    return this.userService.remove(id);
+  changePassword(
+    @Args('input') input: changePasswordInput,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.changePassword(input, user);
   }
-
-  // @Mutation(() => String)
-  // disconnectSocialAcount(
-  //   @Args('addSocialAcountInput') addSocialAcountInput: AddSocialAcountInput,
-  //   @CurrentUser() userId: string,
-  // ) {
-  //   return this.userService.disconnectSocialAcount(
-  //     addSocialAcountInput,
-  //     userId,
-  //   );
-  // }
 }

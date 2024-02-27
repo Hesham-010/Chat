@@ -18,9 +18,12 @@ export class MessageResolver {
   @Mutation(() => Message)
   async sendMessage(
     @Args('sendMessageInput') sendMessageInput: SendMessageInput,
-    @CurrentUser() user: string,
+    @CurrentUser() currentUser: User,
   ) {
-    const message = await this.chatService.sendMessage(sendMessageInput, user);
+    const message = await this.chatService.sendMessage(
+      sendMessageInput,
+      currentUser,
+    );
     await pubsub.publish('SEND_MESSAGE', { message: message });
     return message;
   }
@@ -34,8 +37,8 @@ export class MessageResolver {
   @Query(() => [Message])
   findAllMessages(
     @Args('receiverId') receiverId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() currentUser: User,
   ) {
-    return this.chatService.findAllMessages(receiverId, user);
+    return this.chatService.findAllMessages(receiverId, currentUser);
   }
 }

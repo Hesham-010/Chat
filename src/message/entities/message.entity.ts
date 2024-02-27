@@ -1,9 +1,9 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import {
-  BeforeCreate,
   BelongsTo,
   Column,
   DataType,
+  Default,
   ForeignKey,
   Model,
   PrimaryKey,
@@ -11,12 +11,14 @@ import {
 } from 'sequelize-typescript';
 import { Room } from 'src/room/entities/room.entity';
 import { User } from 'src/user/entities/user.entity';
-import { v4 as uuid } from 'uuid';
 
 @ObjectType()
-@Table
+@Table({
+  tableName: 'messages',
+})
 export class Message extends Model {
   @PrimaryKey
+  @Default(DataType.UUIDV4)
   @Field()
   @Column({
     type: DataType.UUID,
@@ -56,9 +58,4 @@ export class Message extends Model {
 
   @BelongsTo(() => User, 'receiverId')
   userReceiver: User;
-
-  @BeforeCreate
-  static generateUUID(instance: User) {
-    instance.id = uuid();
-  }
 }

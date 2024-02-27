@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { User } from 'src/user/entities/user.entity';
 import { verifyToken } from 'src/utils/token';
 
 export class AuthGuard implements CanActivate {
@@ -11,7 +12,7 @@ export class AuthGuard implements CanActivate {
     const ctx = GqlExecutionContext.create(context).getContext();
 
     let token;
-    if (ctx.req.headers.authorization) {
+    if (ctx.req.headers.authorization || ctx.req.headers.Authorization) {
       token = ctx.req.headers.authorization.split(' ')[1];
     } else {
       throw new UnauthorizedException();
@@ -21,7 +22,9 @@ export class AuthGuard implements CanActivate {
     if (!decoded) {
       throw new UnauthorizedException();
     }
-    ctx.req = decoded;
+    const user = await User.findByPk(decoded.user);
+
+    ctx.req = user;
 
     return true;
   }

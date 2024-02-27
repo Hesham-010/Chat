@@ -11,6 +11,7 @@ import { CreateRoomInput } from '../dto/create-room.input';
 import { CurrentUser } from 'src/_common/decorators/currentUser';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/_common/guards/authGuard';
+import { User } from 'src/user/entities/user.entity';
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -20,8 +21,8 @@ export class RoomResolver {
   @Mutation(() => Room)
   getOrCreateRoom(
     @Args('createRoomInput') createRoomInput: CreateRoomInput,
-    @CurrentUser() user,
+    @CurrentUser() currentUser: User,
   ) {
-    return this.roomService.getOrCreateRoom(createRoomInput, user);
+    return this.roomService.getOrCreateRoom(createRoomInput, currentUser);
   }
 }

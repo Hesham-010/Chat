@@ -1,9 +1,10 @@
 import { ObjectType, Field } from '@nestjs/graphql';
+import { DataTypes } from 'sequelize';
 import {
-  BeforeCreate,
   BelongsTo,
   Column,
   DataType,
+  Default,
   ForeignKey,
   Model,
   PrimaryKey,
@@ -11,12 +12,14 @@ import {
 } from 'sequelize-typescript';
 import { User } from 'src/user/entities/user.entity';
 import { FrienshipRequestEnum } from 'src/utils/enums/FrienshipRequest.enum';
-import { v4 as uuid } from 'uuid';
 
 @ObjectType()
-@Table
+@Table({
+  tableName: 'FriendShips',
+})
 export class FriendShip extends Model {
   @PrimaryKey
+  @Default(DataType.UUIDV4)
   @Field()
   @Column({
     type: DataType.UUID,
@@ -51,9 +54,4 @@ export class FriendShip extends Model {
   @BelongsTo(() => User, 'receiverId')
   @Field(() => User, { nullable: true })
   userReceiver: User;
-
-  @BeforeCreate
-  static generateUUID(instance: User) {
-    instance.id = uuid();
-  }
 }

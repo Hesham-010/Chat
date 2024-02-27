@@ -1,59 +1,102 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
 import {
-  BeforeCreate,
+  AllowNull,
   Column,
   DataType,
+  Default,
   HasMany,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Social } from 'src/auth/entities/social.entity';
-import { Verify } from 'src/auth/entities/verify.entity';
 import { FriendShip } from 'src/friendship/entities/friendship.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { Room } from 'src/room/entities/room.entity';
-import { SocialEnum } from 'src/utils/enums/social.enum';
-import { v4 as uuid } from 'uuid';
+import { GenderEnum, UserRoleEnum } from '../user.enum';
+import { DataTypes } from 'sequelize';
+import { paginate } from 'src/_common/pagination/paginate';
 
 @ObjectType()
-@Table
+@Table({
+  tableName: 'users',
+})
 export class User extends Model {
   @PrimaryKey
-  @Field()
+  @Field(() => ID)
+  @Default(DataType.UUIDV4)
   @Column({
     type: DataType.UUID,
   })
   id: string;
 
+  @AllowNull(false)
   @Field()
   @Column
   firstName: string;
 
+  @AllowNull(false)
   @Field()
   @Column
   lastName: string;
 
+  @AllowNull(false)
   @Field()
+  @Column
+  fullName: string;
+
+  @AllowNull(true)
+  @Column
+  @Field({ nullable: true })
+  bio?: string;
+
+  @AllowNull(false)
+  @Column
+  @Field()
+  phone: string;
+
+  @AllowNull(true)
+  @Field({ nullable: true })
   @Column({
     unique: true,
   })
-  verifiedEmail: string;
+  verifiedEmail?: string;
 
-  @Field()
+  @AllowNull(true)
+  @Field({ nullable: true })
   @Column({
     unique: true,
   })
-  unVerifiedEmail: string;
+  notVerifiedEmail?: string;
 
+  @AllowNull(false)
   @Column
   password: string;
 
+  @Default(GenderEnum.MALE)
+  @AllowNull(false)
+  @Column({ type: DataTypes.ENUM, values: Object.values(GenderEnum) })
+  @Field()
+  gender: GenderEnum;
+
+  @Default(UserRoleEnum.USER)
+  @AllowNull(false)
+  @Column({ type: DataTypes.ENUM, values: Object.values(UserRoleEnum) })
+  @Field()
+  role: UserRoleEnum;
+
+  @AllowNull(true)
+  @Column({ type: DataType.TEXT })
+  @Field({ nullable: true })
+  profilePicture?: string;
+
+  @Default(false)
+  @AllowNull(false)
+  @Column
+  @Field()
+  isBlocked: boolean;
+
   @HasMany(() => Message)
   messages: Message[];
-
-  @HasMany(() => Social)
-  social: Social[];
 
   @HasMany(() => FriendShip)
   friendship: FriendShip[];
@@ -61,8 +104,13 @@ export class User extends Model {
   @HasMany(() => Room)
   room: Room[];
 
-  @BeforeCreate
-  static autoGenerateUUID(user: User) {
-    user.id = uuid();
+  static async paginate(
+    filter = {},
+    sort = '-createdAt',
+    page = 0,
+    limit = 15,
+    include: any = [],
+  ) {
+    return paginate<User>(this, filter, sort, page, limit, include);
   }
 }

@@ -14,18 +14,18 @@ export class MessageService {
     private friendshipRepository: typeof FriendShip,
   ) {}
 
-  async sendMessage(sendMessageInput: SendMessageInput, user: string) {
+  async sendMessage(sendMessageInput: SendMessageInput, currentUser: User) {
     const friendship = await this.friendshipRepository.findOne({
       where: {
         [Op.or]: [
           {
-            senderId: user,
+            senderId: currentUser.id,
             receiverId: sendMessageInput.receiverId,
             accepted: FrienshipRequestEnum.ACCEPT,
           },
           {
             senderId: sendMessageInput.receiverId,
-            receiverId: user,
+            receiverId: currentUser.id,
             accepted: FrienshipRequestEnum.ACCEPT,
           },
         ],
@@ -38,18 +38,18 @@ export class MessageService {
     }
 
     const message = await this.chatRepository.create({
-      senderId: user,
+      senderId: currentUser.id,
       ...sendMessageInput,
     });
     return message;
   }
 
-  async findAllMessages(receiverId: string, user: User) {
+  async findAllMessages(receiverId: string, currentUser: User) {
     const chat = await this.chatRepository.findAll({
       where: {
         [Op.or]: [
-          { senderId: user.id, receiverId },
-          { senderId: receiverId, receiverId: user.id },
+          { senderId: currentUser.id, receiverId },
+          { senderId: receiverId, receiverId: currentUser.id },
         ],
       },
     });

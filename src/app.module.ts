@@ -11,6 +11,7 @@ import { RoomModule } from './room/room.module';
 import { DataloaderModule } from './dataloader/dataloader.module';
 import { DataLoaderService } from './dataloader/services/dataloader.service';
 import { ConfigModule } from '@nestjs/config';
+import { HelperModule } from './_common/helper/helper.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { ConfigModule } from '@nestjs/config';
     FriendshipModule,
     RoomModule,
     DataloaderModule,
+    HelperModule,
   ],
   providers: [],
 })

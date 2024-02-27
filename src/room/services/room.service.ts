@@ -13,12 +13,12 @@ export class RoomService {
     private friendshipRepository: typeof FriendShip,
   ) {}
 
-  async getOrCreateRoom(createRoomInput: CreateRoomInput, user: User) {
+  async getOrCreateRoom(createRoomInput: CreateRoomInput, currentUser: User) {
     const friendship = await this.friendshipRepository.findOne({
       where: {
         [Op.or]: [
-          { senderId: user, receiverId: createRoomInput.receiver },
-          { senderId: createRoomInput.receiver, receiverId: user },
+          { senderId: currentUser.id, receiverId: createRoomInput.receiver },
+          { senderId: createRoomInput.receiver, receiverId: currentUser.id },
         ],
       },
     });
@@ -29,13 +29,13 @@ export class RoomService {
     }
 
     const room = await this.roomRepository.findOne({
-      where: { user1Id: user.id, user2Id: createRoomInput.receiver },
+      where: { senderId: currentUser.id, receiverId: createRoomInput.receiver },
     });
 
     if (!room) {
       const room = await this.roomRepository.create({
-        user1Id: user.id,
-        user2Id: createRoomInput.receiver,
+        senderId: currentUser.id,
+        receiverId: createRoomInput.receiver,
       });
       return room;
     }

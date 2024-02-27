@@ -4,7 +4,6 @@ import { FriendShip } from 'src/friendship/entities/friendship.entity';
 import { Verify } from 'src/auth/entities/verify.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { Room } from 'src/room/entities/room.entity';
-import { Social } from 'src/auth/entities/social.entity';
 
 export const DatabaseProvider = [
   {
@@ -18,7 +17,7 @@ export const DatabaseProvider = [
         password: process.env.DATABASE_PASSWORD,
         database: process.env.DATABASE_NAME,
       });
-      sequelize.addModels([User, Message, FriendShip, Verify, Room, Social]);
+      sequelize.addModels([User, Message, FriendShip, Verify, Room]);
       await sequelize.sync();
       return sequelize;
     },
