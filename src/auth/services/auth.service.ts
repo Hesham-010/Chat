@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/user/entities/user.entity';
 import { comparePassword, hashPassword } from 'src/utils/password';
 import { createToken } from 'src/utils/token';
@@ -6,17 +6,20 @@ import { Verify } from '../entities/verify.entity';
 import { RegisterInput } from '../dtos/register.input';
 import { LoginInput } from '../dtos/login.input';
 import { sendEmail } from 'src/utils/SendEmail/sendMailer';
-import { OtpJob } from 'src/utils/enums/otpJob.enum';
 import { UserService } from 'src/user/services/user.service';
 import { UserTransformer } from 'src/user/transformer/user.transformer';
 import { LoginResponse } from '../response';
 import { BaseHttpException } from 'src/_common/exceptions/base-http-exception';
 import { ErrorCodeEnum } from 'src/_common/exceptions/error-code.enum';
+import { OtpUseCase } from 'src/utils/enums/otpJob.enum';
+import { sendOTPInput } from '../dtos/sendOTP.input';
+import { VerifyEmailInput } from '../dtos/get-valid-code.input';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('USER_REPOSITORY') private userRepository: typeof User,
+    @Inject('VERIFY_REPOSITORY') private verifyRepository: typeof Verify,
     private readonly userService: UserService,
     private readonly userTransformer: UserTransformer,
   ) {}
@@ -53,66 +56,67 @@ export class AuthService {
     return { token, user };
   }
 
-  // async sendOtpForPassword(email: string) {
-  //   const user = await this.userRepository.findOne({
-  //     where: { verifiedEmail: email },
-  //   });
-  //   if (!user) {
-  //     return new NotFoundException('email not found');
-  //   }
-  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  async changePassword(newPassword: string, email: string) {
+    const newHashPassword = await hashPassword(newPassword);
+    console.log(newHashPassword);
+    await this.userRepository.update(
+      { password: newHashPassword },
+      {
+        where: { verifiedEmail: email },
+      },
+    );
+    return 'Success';
+  }
 
-  //   await this.verifyRepository.create({
-  //     otp,
-  //     otpVerified: false,
-  //     otpJob: OtpJob.RESET_PASSWORD,
-  //     userId: user.id,
-  //   });
-  //   sendEmail({ email, subject: 'Verify Password', code: otp });
-  //   return 'Success';
-  // }
+  async verifyEmail(verifyEmailInput: VerifyEmailInput) {
+    const { email } = verifyEmailInput;
 
-  // async changePassword(newPassword: string, email: string) {
-  //   const newHashPassword = await hashPassword(newPassword);
-  //   console.log(newHashPassword);
-  //   await this.userRepository.update(
-  //     { password: newHashPassword },
-  //     {
-  //       where: { verifiedEmail: email },
-  //     },
-  //   );
-  //   return 'Success';
-  // }
+    const user = await this.userService.getUserToVerifyEmail({
+      notVerifiedEmail: email,
+    });
 
-  // async sendOtpForRegister(email: string) {
-  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const verify = await this.getValidVerificationCode(verifyEmailInput, user);
 
-  //   const verify = await this.verifyRepository.create({
-  //     otp,
-  //     otpVerified: false,
-  //     otpJob: OtpJob.VERIFY_EMAIL,
-  //   });
+    await user.update({ verifiedEmail: email, notVerifiedEmail: null });
 
-  //   sendEmail({ email, subject: 'Verify Email', code: otp });
+    await verify.destroy();
 
-  //   return 'success';
-  // }
+    return true;
+  }
 
-  // async verifyOtp(otp: string) {
-  //   const verify = await this.verifyRepository.findOne({
-  //     where: { otp },
-  //   });
+  async sendOtp(sendOtp: sendOTPInput) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiryDate = new Date(Date.now() + 3600000);
 
-  //   if (!verify) {
-  //     return new BadRequestException('Invalid Code');
-  //   }
+    const user = await this.userService.getUserToVerifyEmail({
+      notVerifiedEmail: sendOtp.email,
+    });
 
-  //   if (!verify || Number(verify.createdAt) + 10 * (60 * 1000) < Date.now()) {
-  //     return new BadRequestException('Invalid Code');
-  //   }
+    await this.verifyRepository.create({
+      otp,
+      expiryDate,
+      useCase: OtpUseCase.VERIFY_EMAIL,
+      userId: user.id,
+    });
 
-  //   await verify.destroy();
+    sendEmail({ email: sendOtp.email, subject: 'Verify Email', code: otp });
 
-  //   return 'Code Verified';
-  // }
+    return true;
+  }
+
+  ///////////////////// ////////////// ///////////// ////////// //////////
+  async getValidVerificationCode(
+    verifyEmailInput: VerifyEmailInput,
+    user: User,
+  ): Promise<Verify> {
+    const { otp, useCase } = verifyEmailInput;
+
+    const verify = await this.verifyRepository.findOne({
+      where: { otp, useCase, userId: user.id },
+    });
+    if (!verify) throw new BaseHttpException(ErrorCodeEnum.INVALID_Code);
+    if (verify.expiryDate < new Date(Date.now()))
+      throw new BaseHttpException(ErrorCodeEnum.EXPIRED_VERIFICATION_CODE);
+    return verify;
+  }
 }

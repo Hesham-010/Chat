@@ -4,6 +4,8 @@ import { FriendShip } from 'src/friendship/entities/friendship.entity';
 import { Verify } from 'src/auth/entities/verify.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { Room } from 'src/room/entities/room.entity';
+import { Notification } from 'src/notification/models/notification.model';
+import { Fcm_Token } from 'src/notification/models/fcm_token.model';
 
 export const DatabaseProvider = [
   {
@@ -17,7 +19,15 @@ export const DatabaseProvider = [
         password: process.env.DATABASE_PASSWORD,
         database: process.env.DATABASE_NAME,
       });
-      sequelize.addModels([User, Message, FriendShip, Verify, Room]);
+      sequelize.addModels([
+        User,
+        Message,
+        FriendShip,
+        Verify,
+        Room,
+        Notification,
+        Fcm_Token,
+      ]);
       await sequelize.sync();
       return sequelize;
     },

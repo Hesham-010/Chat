@@ -3,8 +3,9 @@ import { AuthService } from '../services/auth.service';
 import { RegisterInput } from '../dtos/register.input';
 import { LoginInput } from '../dtos/login.input';
 import { User } from 'src/user/entities/user.entity';
-import { AuthResponse } from '../types/authType';
 import { LoginResponse } from '../response';
+import { sendOTPInput } from '../dtos/sendOTP.input';
+import { VerifyEmailInput } from '../dtos/get-valid-code.input';
 
 @Resolver()
 export class AuthResolver {
@@ -21,11 +22,6 @@ export class AuthResolver {
   }
 
   // @Mutation(() => String)
-  // sendOtpForPassword(@Args('email') email: string) {
-  //   return this.authService.sendOtpForPassword(email);
-  // }
-
-  // @Mutation(() => String)
   // changePassword(
   //   @Args('newPassword') newPassword: string,
   //   @Args('email') email: string,
@@ -33,13 +29,13 @@ export class AuthResolver {
   //   return this.authService.changePassword(newPassword, email);
   // }
 
-  // @Mutation(() => String)
-  // sendOtpForRegister(@Args('email') email: string) {
-  //   return this.authService.sendOtpForRegister(email);
-  // }
+  @Mutation(() => Boolean)
+  sendOtp(@Args('input') input: sendOTPInput) {
+    return this.authService.sendOtp(input);
+  }
 
-  // @Mutation(() => String)
-  // verifyOtp(@Args('otp') otp: string) {
-  //   return this.authService.verifyOtp(otp);
-  // }
+  @Mutation(() => Boolean)
+  verifyEmail(@Args('input') input: VerifyEmailInput) {
+    return this.authService.verifyEmail(input);
+  }
 }

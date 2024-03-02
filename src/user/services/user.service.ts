@@ -10,7 +10,6 @@ import { UpdateUserInput } from '../dto/update-user.input';
 import { UserTransformer } from '../transformer/user.transformer';
 import { isEmail } from 'class-validator';
 import { changePasswordInput } from '../dto/changePassword.input';
-import { comparePassword } from 'src/utils/password';
 
 @Injectable()
 export class UserService {
@@ -140,5 +139,14 @@ export class UserService {
     await user.update({ password });
 
     return 'Password Updated';
+  }
+
+  async getUserToVerifyEmail(filter) {
+    const user = await this.userRepository.findOne({ where: filter });
+    if (!user) throw new BaseHttpException(ErrorCodeEnum.USER_DOES_NOT_EXIST);
+
+    if (user.isBlocked) throw new BaseHttpException(ErrorCodeEnum.BLOCKED_USER);
+
+    return user;
   }
 }

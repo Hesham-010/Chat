@@ -1,4 +1,4 @@
-export enum OtpJob {
-  RESET_PASSWORD = 'RESET PASSWORD',
-  VERIFY_EMAIL = 'VERIFY EMAIL',
+export enum OtpUseCase {
+  RESET_PASSWORD = 'RESET_PASSWORD',
+  VERIFY_EMAIL = 'VERIFY_EMAIL',
 }

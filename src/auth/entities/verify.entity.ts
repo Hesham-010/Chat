@@ -1,44 +1,53 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { User } from 'src/user/entities/user.entity';
+import { OtpUseCase } from 'src/utils/enums/otpJob.enum';
 import {
-  BeforeCreate,
+  AllowNull,
   BelongsTo,
   Column,
-  CreatedAt,
   DataType,
+  Default,
   ForeignKey,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { OtpJob } from 'src/utils/enums/otpJob.enum';
-import { v4 as uuid } from 'uuid';
 
 @ObjectType()
 @Table
 export class Verify extends Model {
   @PrimaryKey
+  @Default(DataType.UUIDV4)
   @Field()
   @Column({
     type: DataType.UUID,
   })
   id: string;
 
+  @AllowNull(false)
   @Field()
   @Column
   otp: number;
 
-  @Field()
-  @Column
-  otpVerified: boolean;
-
+  @AllowNull(false)
   @Field()
   @Column({
-    type: DataType.ENUM(...Object.values(OtpJob)),
+    type: DataType.ENUM(...Object.values(OtpUseCase)),
   })
-  otpJob: string;
+  useCase: OtpUseCase;
 
-  @BeforeCreate
-  static autoGenerateUUID(verify: Verify) {
-    verify.id = uuid();
-  }
+  @AllowNull(false)
+  @Column({ type: DataType.DATE })
+  expiryDate: Date;
+
+  @AllowNull(false)
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+  })
+  @Field()
+  userId: string;
+
+  @BelongsTo(() => User)
+  user: User;
 }

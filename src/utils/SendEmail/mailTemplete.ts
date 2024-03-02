@@ -120,7 +120,7 @@ export const html = (code) => `<!doctype html>
                   <tbody>
                     <tr>
                       <td align="center" style="font-size:0px;padding:0px 25px 0px 25px;word-break:break-word;">
-                        <div style="font-family:Arial, sans-serif;font-size:14px;line-height:28px;text-align:center;color:#55575d;">We received the request. \n ${code} \n Enter this code to complete.</div>
+                        <div style="font-family:Arial, sans-serif;font-size:14px;line-height:28px;text-align:center;color:#55575d;">We received the request. \n ${code} \nEnter this code to complete.</div>
                       </td>
                     </tr>
                   </tbody>
