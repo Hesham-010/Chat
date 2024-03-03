@@ -1,86 +1,86 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Notification } from '../models/notification.model';
-import * as firebase from 'firebase-admin';
-import * as path from 'path';
 import { NotificationInput } from '../dtos/notification.input';
-
-firebase.initializeApp({
-  credential: firebase.credential.cert(
-    path.join(__dirname, '..', '..', '..', 'firebase-admin-sdk.json'),
-  ),
-});
+import { DeviceInfo } from '../models/deviceInfo.model';
+import { DeviceType, NotificationStatus } from '../notification_status.enum';
+import { BaseHttpException } from 'src/_common/exceptions/base-http-exception';
+import { ErrorCodeEnum } from 'src/_common/exceptions/error-code.enum';
+import {
+  CreateDeviceInfoInput,
+  DeviceInfoInput,
+} from '../dtos/deviceInfo.input';
 
 @Injectable()
 export class NotificationService {
-  constructor() {}
+  constructor(
+    @Inject('DEVICE_INFO_REPOSITORY') private deviceInfoRepo: typeof DeviceInfo,
+    @Inject('NOTIFICATION_REPOSITORY')
+    private notificationRepo: typeof Notification,
+  ) {}
 
-  // async acceptPushNotification(
-  //   customerId: string,
-  //   notification_token: string,
-  // ): Promise<NotificationToken> {
-  //   const updateNotificationToken = await this.notificationTokenRepo.update(
-  //     { customer: { id: customerId } },
-  //     {
-  //       status: NotificationStatus.ACTIVE,
-  //     },
-  //   );
+  async acceptPushNotification(input: DeviceInfoInput): Promise<Boolean> {
+    const { deviceType, fcm_Token } = input;
+    const updateDeviceinfo = await this.deviceInfoRepo.update(
+      {
+        status: NotificationStatus.ACTIVE,
+      },
+      {
+        where: {
+          fcm_Token,
+          deviceType,
+        },
+        returning: true,
+      },
+    );
 
-  //   if (!updateNotificationToken.affected) {
-  //     const notificationToken = this.notificationTokenRepo.create({
-  //       customer: { id: customerId },
-  //       notification_token,
-  //       status: NotificationStatus.ACTIVE,
-  //     });
+    return true;
+  }
 
-  //     await this.notificationTokenRepo.save(notificationToken);
+  async disablePushNotification(input: DeviceInfoInput): Promise<Boolean> {
+    const deviceInfo = await this.deviceInfoRepo.update(
+      {
+        status: NotificationStatus.INACTIVE,
+      },
+      {
+        where: { deviceType: input.deviceType, fcm_Token: input.fcm_Token },
+        returning: true,
+      },
+    );
 
-  //     return notificationToken;
-  //   }
+    if (!deviceInfo)
+      throw new BaseHttpException(ErrorCodeEnum.INVALID_DEVICE_TOKEN);
 
-  //   return updateNotificationToken.raw;
-  // }
+    return true;
+  }
 
-  // async disablePushNotification(customerId: string) {
-  //   try {
-  //     await this.notificationTokenRepo.update(
-  //       { customer: { id: customerId } },
-  //       {
-  //         status: NotificationStatus.INACTIVE,
-  //       },
-  //     );
-  //     return 'InActive Notification Successfully';
-  //   } catch (error) {
-  //     return error;
-  //   }
-  // }
+  // async sendPushNotification(notificationInput: NotificationInput) {
+  //   const { title, body, userId } = notificationInput;
 
-  // async sendPushNotification(
-  //   customerId: any,
-  //   notificationInput: NotificationInput,
-  // ) {
-  //   const { title, body } = notificationInput;
-
-  //   const notificationToken = await this.notificationTokenRepo.findOne({
+  //   const deviceInfo = await this.deviceInfoRepo.findAll({
   //     where: {
-  //       customer: { id: customerId },
+  //       userId,
   //       status: NotificationStatus.ACTIVE,
   //     },
   //   });
 
-  //   if (!notificationToken) {
-  //     return `this customer don't have fcm token`;
+  //   if (!deviceInfo)
+  //     throw new BaseHttpException(ErrorCodeEnum.INVALID_DEVICE_TOKEN);
+
+  //   let fcm_Tokens = [];
+  //   for (let i = 0; i < deviceInfo.length; i++) {
+  //     fcm_Tokens.push(deviceInfo[i].fcm_Token);
   //   }
 
-  //   await this.notificationRepo.save({
-  //     notification_token: notificationToken,
+  //   try {
+  //     await this.queueService.sendNotification(title, body, fcm_Tokens);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+
+  //   return await this.notificationRepo.create({
+  //     userId,
   //     title,
   //     body,
-  //     status: NotificationStatus.ACTIVE,
-  //   });
-
-  //   return await firebase.messaging().send({
-  //     notification: { title, body },
-  //     token: notificationToken.notification_token,
   //   });
   // }
 
@@ -102,4 +102,8 @@ export class NotificationService {
   //   );
   //   if (notifications.affected) return 'Success';
   // }
+
+  async createDeviceInfoForLogin(input: CreateDeviceInfoInput) {
+    return await this.deviceInfoRepo.create({ ...input });
+  }
 }

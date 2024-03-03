@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { QueueService } from './services/sendEmail.service';
+import { NotificationConsumer } from './consumer/notification.consumer';
+import { QueueResolver } from './resolvers/queue.resolver';
 
 @Module({
   imports: [
@@ -11,9 +12,9 @@ import { QueueService } from './services/sendEmail.service';
       },
     }),
     BullModule.registerQueue({
-      name: 'sendOTP',
+      name: 'notification',
     }),
   ],
-  providers: [QueueService],
+  providers: [NotificationConsumer, QueueResolver],
 })
 export class QueueModule {}

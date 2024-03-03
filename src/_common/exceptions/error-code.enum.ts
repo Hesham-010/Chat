@@ -18,4 +18,5 @@ export enum ErrorCodeEnum {
   INVALID_EMAIL = 641,
   INVALID_PHONE_NUMBER = 642,
   INVALID_Code = 643,
+  INVALID_DEVICE_TOKEN = 645,
 }

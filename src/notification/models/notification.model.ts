@@ -9,9 +9,8 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { DeviceType, NotificationStatus } from '../notification_status.enum';
-import { DataTypes } from 'sequelize';
-import { Fcm_Token } from './fcm_token.model';
+import { DeviceInfo } from './deviceInfo.model';
+import { User } from 'src/user/entities/user.entity';
 
 @ObjectType()
 @Table({
@@ -26,18 +25,15 @@ export class Notification extends Model {
   @Field()
   id: number;
 
-  @Column({ type: DataType.ENUM, values: Object.values(DeviceType) })
-  deviceType: DeviceType;
-
-  @ForeignKey(() => Fcm_Token)
+  @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
   })
   @Field()
-  fcm_TokenId: string;
+  userId: string;
 
-  @BelongsTo(() => Fcm_Token, 'fcm_TokenId')
-  fcm_Token: Fcm_Token;
+  @BelongsTo(() => User, 'userId')
+  user: User;
 
   @Column
   @Field()
@@ -46,10 +42,6 @@ export class Notification extends Model {
   @Column
   @Field()
   body: string;
-
-  @Column({ type: DataTypes.ENUM, values: Object.values(NotificationStatus) })
-  @Field()
-  status: NotificationStatus;
 
   @Default(false)
   @Column

@@ -1,25 +1,23 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { DeviceType, NotificationStatus } from '../notification_status.enum';
+import { DataTypes } from 'sequelize';
+import { User } from 'src/user/entities/user.entity';
 import {
   BelongsTo,
   Column,
   DataType,
   Default,
   ForeignKey,
-  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { DataTypes } from 'sequelize';
-import { User } from 'src/user/entities/user.entity';
-import { Notification } from './notification.model';
 
 @ObjectType()
 @Table({
-  tableName: 'Fcm_Tokens',
+  tableName: 'DeviceInfo',
 })
-export class Fcm_Token extends Model {
+export class DeviceInfo extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Field()
@@ -50,7 +48,4 @@ export class Fcm_Token extends Model {
 
   @BelongsTo(() => User, 'userId')
   user: User;
-
-  @HasMany(() => Notification)
-  notification: Notification[];
 }

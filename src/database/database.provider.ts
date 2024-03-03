@@ -5,7 +5,7 @@ import { Verify } from 'src/auth/entities/verify.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { Room } from 'src/room/entities/room.entity';
 import { Notification } from 'src/notification/models/notification.model';
-import { Fcm_Token } from 'src/notification/models/fcm_token.model';
+import { DeviceInfo } from 'src/notification/models/deviceInfo.model';
 
 export const DatabaseProvider = [
   {
@@ -26,7 +26,7 @@ export const DatabaseProvider = [
         Verify,
         Room,
         Notification,
-        Fcm_Token,
+        DeviceInfo,
       ]);
       await sequelize.sync();
       return sequelize;

@@ -12,6 +12,7 @@ import { DataloaderModule } from './dataloader/dataloader.module';
 import { DataLoaderService } from './dataloader/services/dataloader.service';
 import { ConfigModule } from '@nestjs/config';
 import { HelperModule } from './_common/helper/helper.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { HelperModule } from './_common/helper/helper.module';
     RoomModule,
     DataloaderModule,
     HelperModule,
+    QueueModule,
   ],
   providers: [],
 })

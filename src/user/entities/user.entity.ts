@@ -15,8 +15,9 @@ import { Room } from 'src/room/entities/room.entity';
 import { GenderEnum, UserRoleEnum } from '../user.enum';
 import { DataTypes } from 'sequelize';
 import { paginate } from 'src/_common/pagination/paginate';
-import { Fcm_Token } from 'src/notification/models/fcm_token.model';
+import { DeviceInfo } from 'src/notification/models/deviceInfo.model';
 import { Verify } from 'src/auth/entities/verify.entity';
+import { Notification } from 'src/notification/models/notification.model';
 
 @ObjectType()
 @Table({
@@ -109,8 +110,11 @@ export class User extends Model {
   @HasMany(() => Verify)
   verify: Verify[];
 
-  @HasMany(() => Fcm_Token)
-  fcm_Token: Fcm_Token[];
+  @HasMany(() => DeviceInfo)
+  deviceInfo: DeviceInfo[];
+
+  @HasMany(() => Notification)
+  notification: Notification[];
 
   static async paginate(
     filter = {},

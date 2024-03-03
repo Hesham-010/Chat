@@ -1,8 +1,9 @@
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { NotificationService } from '../services/notification.service';
-import { Notification_TokenInput } from '../dtos/notificationToken.input';
+import { DeviceInfoInput } from '../dtos/deviceInfo.input';
 import { Notification } from '../models/notification.model';
-import { Fcm_Token } from '../models/fcm_token.model';
+import { DeviceInfo } from '../models/deviceInfo.model';
+import { NotificationInput } from '../dtos/notification.input';
 
 @Resolver()
 export class NotificationResolver {
@@ -13,24 +14,21 @@ export class NotificationResolver {
   //   return this.notificationService.findAll();
   // }
 
-  // @Mutation(() => Fcm_Token)
-  // acceptPushNotification(
-  //   @Args('notification_TokenInput')
-  //   notification_TokenInput: Notification_TokenInput,
-  // ) {
-  //   return this.notificationService.acceptPushNotification(
-  //     notification_TokenInput.customerId,
-  //     notification_TokenInput.notificationToken,
-  //   );
-  // }
+  @Mutation(() => DeviceInfo)
+  acceptPushNotification(
+    @Args('Input')
+    input: DeviceInfoInput,
+  ) {
+    return this.notificationService.acceptPushNotification(input);
+  }
 
-  // @Mutation(() => NotificationToken)
-  // disablePushNotification(
-  //   @Args('customerId')
-  //   customerId: string,
-  // ) {
-  //   return this.notificationService.disablePushNotification(customerId);
-  // }
+  @Mutation(() => DeviceInfo)
+  disablePushNotification(
+    @Args('input')
+    input: DeviceInfoInput,
+  ) {
+    return this.notificationService.disablePushNotification(input);
+  }
 
   // @Mutation(() => String)
   // seenOneNotification(@Args('notificationId') notificationId: string) {

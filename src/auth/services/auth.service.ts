@@ -14,6 +14,8 @@ import { ErrorCodeEnum } from 'src/_common/exceptions/error-code.enum';
 import { OtpUseCase } from 'src/utils/enums/otpJob.enum';
 import { sendOTPInput } from '../dtos/sendOTP.input';
 import { VerifyEmailInput } from '../dtos/get-valid-code.input';
+import { NotificationService } from 'src/notification/services/notification.service';
+import { DeviceType } from 'src/notification/notification_status.enum';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,7 @@ export class AuthService {
     @Inject('VERIFY_REPOSITORY') private verifyRepository: typeof Verify,
     private readonly userService: UserService,
     private readonly userTransformer: UserTransformer,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async register(registerInput: RegisterInput) {
@@ -51,6 +54,12 @@ export class AuthService {
     if (!user || !matchPassword) {
       throw new BaseHttpException(ErrorCodeEnum.INCORRECT_EMAIL_OR_PASSWORD);
     }
+
+    await this.notificationService.createDeviceInfoForLogin({
+      userId: user.id,
+      deviceType: loginInput.deviceType,
+      fcm_Token: loginInput.fcm_Token,
+    });
 
     const token = await createToken({ user: user.id });
     return { token, user };
@@ -104,7 +113,7 @@ export class AuthService {
     return true;
   }
 
-  ///////////////////// ////////////// ///////////// ////////// //////////
+  //////////////////////////////////////////////////////////////////
   async getValidVerificationCode(
     verifyEmailInput: VerifyEmailInput,
     user: User,
